@@ -45,6 +45,7 @@
     <Compile Include="FSharp.Core\NativeInterop.fs" />
 
     <Compile Include="FSharp.Core\Microsoft.FSharp.Collections\Utils.fs" />
+    <Compile Include="FSharp.Core\Microsoft.FSharp.Collections\ImmArrayModule.fs" />
     <Compile Include="FSharp.Core\Microsoft.FSharp.Collections\ArrayModule.fs" />
     <Compile Include="FSharp.Core\Microsoft.FSharp.Collections\ArrayModule2.fs" />
     <Compile Include="FSharp.Core\Microsoft.FSharp.Collections\Array2Module.fs" />

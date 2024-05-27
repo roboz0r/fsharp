@@ -151,6 +151,12 @@
     <Compile Include="array.fs">
       <Link>Collections/array.fs</Link>
     </Compile>
+    <Compile Include="immarray.fsi">
+      <Link>Collections/immarray.fsi</Link>
+    </Compile>
+    <Compile Include="immarray.fs">
+      <Link>Collections/immarray.fs</Link>
+    </Compile> 
     <Compile Include="array3.fsi">
       <Link>Collections/array3.fsi</Link>
     </Compile>
@@ -280,6 +286,9 @@
     <Compile Include="fslib-extra-pervasives.fs">
       <Link>Extras/fslib-extra-pervasives.fs</Link>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Collections.Immutable" Version="7.0.0" />
   </ItemGroup>
 
   <Target Name="CopyToBuiltBin" BeforeTargets="BuiltProjectOutputGroup" AfterTargets="CoreCompile">
