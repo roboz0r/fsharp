@@ -22,7 +22,7 @@ val TcArrayOrListComputedExpression:
     env: TcEnv ->
     overallTy: OverallTy ->
     tpenv: UnscopedTyparEnv ->
-    isArray: bool * comp: SynExpr ->
+    collKind: CollKind * comp: SynExpr ->
         m: range ->
             Expr * UnscopedTyparEnv
 

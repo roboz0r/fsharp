@@ -303,7 +303,13 @@ type TcFileState =
 
         // forward call
         TcArrayOrListComputedExpression:
-            TcFileState -> TcEnv -> OverallTy -> UnscopedTyparEnv -> bool * SynExpr -> range -> Expr * UnscopedTyparEnv
+            TcFileState
+                -> TcEnv
+                -> OverallTy
+                -> UnscopedTyparEnv
+                -> CollKind * SynExpr
+                -> range
+                -> Expr * UnscopedTyparEnv
 
         // forward call
         TcComputationExpression:
@@ -349,7 +355,13 @@ type TcFileState =
         tcSequenceExpressionEntry:
             (TcFileState -> TcEnv -> OverallTy -> UnscopedTyparEnv -> bool * SynExpr -> range -> Expr * UnscopedTyparEnv) *
         tcArrayOrListSequenceExpression:
-            (TcFileState -> TcEnv -> OverallTy -> UnscopedTyparEnv -> bool * SynExpr -> range -> Expr * UnscopedTyparEnv) *
+            (TcFileState
+                -> TcEnv
+                -> OverallTy
+                -> UnscopedTyparEnv
+                -> CollKind * SynExpr
+                -> range
+                -> Expr * UnscopedTyparEnv) *
         tcComputationExpression:
             (TcFileState
                 -> TcEnv

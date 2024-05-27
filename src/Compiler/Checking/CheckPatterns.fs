@@ -309,8 +309,8 @@ and TcPat warnOnUpper (cenv: cenv) env valReprInfo vFlags (patEnv: TcPatLinearEn
     | SynPat.Paren (p, _) ->
         TcPat warnOnUpper cenv env None vFlags patEnv ty p
 
-    | SynPat.ArrayOrList (isArray, args, m) ->
-        TcPatArrayOrList warnOnUpper cenv env vFlags patEnv ty isArray args m
+    | SynPat.ArrayOrList (collKind, args, m) ->
+        TcPatArrayOrList warnOnUpper cenv env vFlags patEnv ty collKind args m
 
     | SynPat.Record (flds, m) ->
         TcRecordPat warnOnUpper cenv env vFlags patEnv ty flds m
@@ -330,7 +330,7 @@ and TcConstPat warnOnUpper cenv env vFlags patEnv ty synConst m =
     match synConst with
     | SynConst.Bytes (bytes, _, m) ->
         UnifyTypes cenv env m ty (mkByteArrayTy g)
-        let synReplacementExpr = SynPat.ArrayOrList (true, [ for b in bytes -> SynPat.Const(SynConst.Byte b, m) ], m)
+        let synReplacementExpr = SynPat.ArrayOrList (CollKind.Array, [ for b in bytes -> SynPat.Const(SynConst.Byte b, m) ], m)
         TcPat warnOnUpper cenv env None vFlags patEnv ty synReplacementExpr
 
     | SynConst.UserNum _ ->
@@ -429,15 +429,26 @@ and TcPatTuple warnOnUpper cenv env vFlags patEnv ty isExplicitStruct args m =
         let phase2 _ = TPat_error m
         phase2, acc
 
-and TcPatArrayOrList warnOnUpper cenv env vFlags patEnv ty isArray args m =
+and TcPatArrayOrList warnOnUpper cenv env vFlags patEnv ty collKind args m =
     let g = cenv.g
     let argTy = NewInferenceType g
-    UnifyTypes cenv env m ty (if isArray then mkArrayType g argTy else mkListTy g argTy)
+    let actualTy = 
+        match collKind with
+        | CollKind.Array -> mkArrayType g argTy
+        | CollKind.List -> mkListTy g argTy
+        | CollKind.ImmArray ->
+            failwith "TODO: Write mkImmArrayType based on mkArrayType"
+            // mkImmArrayType g argTy
+
+    UnifyTypes cenv env m ty actualTy
     let argsR, acc = TcPatterns warnOnUpper cenv env vFlags patEnv (List.map (fun _ -> argTy) args) args
     let phase2 values =
-        let argsR = List.map (fun f -> f values) argsR
-        if isArray then TPat_array(argsR, argTy, m)
-        else List.foldBack (mkConsListPat g argTy) argsR (mkNilListPat g m argTy)
+        let argsR = List.map (fun f -> f values) argsR 
+        match collKind with
+        | CollKind.Array -> TPat_array(argsR, argTy, m)
+        | CollKind.List -> List.foldBack (mkConsListPat g argTy) argsR (mkNilListPat g m argTy)
+        | CollKind.ImmArray -> failwith "Not implemented"
+
     phase2, acc
 
 and TcRecordPat warnOnUpper cenv env vFlags patEnv ty fieldPats m =

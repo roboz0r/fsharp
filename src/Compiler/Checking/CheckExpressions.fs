@@ -4000,7 +4000,7 @@ let GetInstanceMemberThisVariable (vspec: Val, expr) =
 /// c.atomicLeftMethExpr[idx] and atomicLeftExpr[idx] as applications give warnings
 let checkHighPrecedenceFunctionApplicationToList (g: TcGlobals) args atomicFlag exprRange =
     match args, atomicFlag with
-    | ([SynExpr.ArrayOrList (false, _, _)] | [SynExpr.ArrayOrListComputed (false, _, _)]), ExprAtomicFlag.Atomic ->
+    | ([SynExpr.ArrayOrList (CollKind.List, _, _)] | [SynExpr.ArrayOrListComputed (CollKind.List, _, _)]), ExprAtomicFlag.Atomic ->
         if g.langVersion.SupportsFeature LanguageFeature.IndexerNotationWithoutDot then
             informationalWarning(Error(FSComp.SR.tcHighPrecedenceFunctionApplicationToListDeprecated(), exprRange))
         elif not (g.langVersion.IsExplicitlySpecifiedAs50OrBefore()) then
@@ -5091,8 +5091,8 @@ and ConvSynPatToSynExpr synPat =
     | SynPat.Paren (innerPat, _) ->
         ConvSynPatToSynExpr innerPat
 
-    | SynPat.ArrayOrList (isArray, args, m) ->
-        SynExpr.ArrayOrList (isArray,List.map ConvSynPatToSynExpr args, m)
+    | SynPat.ArrayOrList (collKind, args, m) ->
+        SynExpr.ArrayOrList (collKind,List.map ConvSynPatToSynExpr args, m)
 
     | SynPat.QuoteExpr (e,_) ->
         e
@@ -5814,9 +5814,9 @@ and TcExprUndelayed (cenv: cenv) (overallTy: OverallTy) env tpenv (synExpr: SynE
             BindOriginalRecdExpr withExpr (fun withExpr -> SynExpr.AnonRecd (isStruct, withExpr, unsortedFieldExprs, mWholeExpr, trivia))
             |> TcExpr cenv overallTy env tpenv
 
-    | SynExpr.ArrayOrList (isArray, args, m) ->
+    | SynExpr.ArrayOrList (collKind, args, m) ->
         TcNonControlFlowExpr env <| fun env ->
-        TcExprArrayOrList cenv overallTy env tpenv (isArray, args, m)
+        TcExprArrayOrList cenv overallTy env tpenv (collKind, args, m)
 
     | SynExpr.New (superInit, synObjTy, arg, mNewExpr) ->
         let objTy, tpenv = TcType cenv NewTyparsOK CheckCxs ItemOccurence.Use WarnOnIWSAM.Yes env tpenv synObjTy
@@ -5860,11 +5860,11 @@ and TcExprUndelayed (cenv: cenv) (overallTy: OverallTy) env tpenv (synExpr: SynE
         let env = ExitFamilyRegion env
         cenv.TcSequenceExpressionEntry cenv env overallTy tpenv (hasSeqBuilder, comp) m
 
-    | SynExpr.ArrayOrListComputed (isArray, comp, m) ->
+    | SynExpr.ArrayOrListComputed (collKind, comp, m) ->
         TcNonControlFlowExpr env <| fun env ->
         let env = ExitFamilyRegion env
         CallExprHasTypeSink cenv.tcSink (m, env.NameEnv, overallTy.Commit, env.eAccessRights)
-        cenv.TcArrayOrListComputedExpression cenv env overallTy tpenv (isArray, comp)  m
+        cenv.TcArrayOrListComputedExpression cenv env overallTy tpenv (collKind, comp)  m
 
     | SynExpr.LetOrUse _ ->
         TcLinearExprs (TcExprThatCanBeCtorBody cenv) cenv env overallTy tpenv false synExpr id
@@ -6099,12 +6099,18 @@ and TcExprTuple (cenv: cenv) overallTy env tpenv (isExplicitStruct, args, m) =
         expr, tpenv
     )
 
-and TcExprArrayOrList (cenv: cenv) overallTy env tpenv (isArray, args, m) =
+and TcExprArrayOrList (cenv: cenv) overallTy env tpenv (collKind, args, m) =
     let g = cenv.g
 
     CallExprHasTypeSink cenv.tcSink (m, env.NameEnv, overallTy.Commit, env.AccessRights)
     let argTy = NewInferenceType g
-    let actualTy = if isArray then mkArrayType g argTy else mkListTy g argTy
+    let actualTy = 
+        match collKind with
+        | CollKind.Array -> mkArrayType g argTy
+        | CollKind.List -> mkListTy g argTy
+        | CollKind.ImmArray -> 
+            failwith "Write mkImmArrayType based on mkArrayType"
+            //mkImmArrayType g argTy
 
     // Propagating type directed conversion, e.g. for 
     //     let x : seq<int64>  = [ 1; 2 ]
@@ -6121,13 +6127,15 @@ and TcExprArrayOrList (cenv: cenv) overallTy env tpenv (isArray, args, m) =
                 first <- false
                 env
             else
-                { env with eContextInfo = ContextInfo.CollectionElement (isArray, m) }
+                { env with eContextInfo = ContextInfo.CollectionElement (collKind, m) }
 
         let argsR, tpenv = List.mapFold (fun tpenv (x: SynExpr) -> TcExprFlex cenv flex false argTy (getInitEnv x.Range) tpenv x) tpenv args
 
         let expr =
-            if isArray then Expr.Op (TOp.Array, [argTy], argsR, m)
-            else List.foldBack (mkCons g argTy) argsR (mkNil g m argTy)
+            match collKind with
+            | CollKind.Array -> Expr.Op (TOp.Array, [argTy], argsR, m)
+            | CollKind.List -> List.foldBack (mkCons g argTy) argsR (mkNil g m argTy)
+            | CollKind.ImmArray -> failwith "Not implemented"
         expr, tpenv
     )
 
@@ -8194,7 +8202,7 @@ and Propagate (cenv: cenv) (overallTy: OverallTy) (env: TcEnv) tpenv (expr: Appl
                 // expr[idx1..]
                 // expr[..idx1]
                 // expr[idx1..idx2]
-                | SynExpr.ArrayOrListComputed(false, _, _) ->
+                | SynExpr.ArrayOrListComputed(CollKind.List, _, _) ->
                     let isAdjacent = isAdjacentListExpr isSugar atomicFlag synLeftExprOpt synArg
                     if isAdjacent && g.langVersion.SupportsFeature LanguageFeature.IndexerNotationWithoutDot then
                         // This is the non-error path
@@ -8430,15 +8438,15 @@ and isAdjacentListExpr isSugar atomicFlag (synLeftExprOpt: SynExpr option) (synA
     not isSugar  &&
     if atomicFlag = ExprAtomicFlag.Atomic then
         match synArg with
-        | SynExpr.ArrayOrList (false, _, _)
-        | SynExpr.ArrayOrListComputed (false, _, _) -> true
+        | SynExpr.ArrayOrList (CollKind.List, _, _)
+        | SynExpr.ArrayOrListComputed (CollKind.List, _, _) -> true
         | _ -> false
     else
         match synLeftExprOpt with
         | Some synLeftExpr -> 
             match synArg with
-            | SynExpr.ArrayOrList (false, _, _)
-            | SynExpr.ArrayOrListComputed (false, _, _) ->
+            | SynExpr.ArrayOrList (CollKind.List, _, _)
+            | SynExpr.ArrayOrListComputed (CollKind.List, _, _) ->
                 synLeftExpr.Range.IsAdjacentTo synArg.Range 
             | _ -> false
         | _ -> false
@@ -8507,7 +8515,7 @@ and TcApplicationThen (cenv: cenv) (overallTy: OverallTy) env tpenv mExprAndArg 
         match synArg with
         // leftExpr[idx]
         // leftExpr[idx] <- expr2
-        | SynExpr.ArrayOrListComputed(false, IndexerArgs indexArgs, m) 
+        | SynExpr.ArrayOrListComputed(CollKind.List, IndexerArgs indexArgs, m) 
               when 
                 isAdjacentListExpr isSugar atomicFlag synLeftExprOpt synArg && 
                 g.langVersion.SupportsFeature LanguageFeature.IndexerNotationWithoutDot ->

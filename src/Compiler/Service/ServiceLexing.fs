@@ -280,6 +280,7 @@ module internal TokenClassifications =
         | LBRACK
         | LBRACE _
         | LBRACK_BAR
+        | LBRACK_COLON
         | LBRACE_BAR -> (FSharpTokenColorKind.Punctuation, FSharpTokenCharKind.Delimiter, FSharpTokenTriggerClass.MatchBraces)
 
         | GREATER_RBRACK
@@ -291,6 +292,7 @@ module internal TokenClassifications =
         | RBRACE_COMING_SOON
         | RBRACE_IS_HERE
         | BAR_RBRACK
+        | COLON_RBRACK
         | BAR_RBRACE -> (FSharpTokenColorKind.Punctuation, FSharpTokenCharKind.Delimiter, FSharpTokenTriggerClass.MatchBraces)
 
         | PUBLIC

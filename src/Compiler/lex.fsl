@@ -868,6 +868,8 @@ rule token (args: LexArgs) (skip: bool) = parse
 
  | "[|" { LBRACK_BAR }
 
+ | "[:" { LBRACK_COLON }
+
  | "{|" { LBRACE_BAR }
 
  | "<" { LESS false }
@@ -879,6 +881,8 @@ rule token (args: LexArgs) (skip: bool) = parse
  | "]" { RBRACK }
 
  | "|]" { BAR_RBRACK }
+
+ | ":]" { COLON_RBRACK }
 
  | "|}" { BAR_RBRACE }
 

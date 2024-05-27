@@ -184,8 +184,10 @@ module SynExpr =
         | SynExpr.AnonRecd _
         | SynExpr.InterpolatedString _
         | SynExpr.Null _
-        | SynExpr.ArrayOrList(isArray = true)
-        | SynExpr.ArrayOrListComputed(isArray = true) -> ValueSome AtomicExprAfterType
+        | SynExpr.ArrayOrList(collKind = CollKind.Array)
+        | SynExpr.ArrayOrList(collKind = CollKind.ImmArray)
+        | SynExpr.ArrayOrListComputed(collKind = CollKind.Array)
+        | SynExpr.ArrayOrListComputed(collKind = CollKind.ImmArray) -> ValueSome AtomicExprAfterType
         | _ -> ValueNone
 
     /// Matches if the given expression represents a high-precedence
@@ -886,7 +888,7 @@ module SynExpr =
         //     (f(x))[z]
         //     x.M(y)[z]
         //     M(x).N <- y
-        | SynExpr.App _, SyntaxNode.SynExpr(SynExpr.App(argExpr = SynExpr.ArrayOrListComputed(isArray = false))) :: _ -> true
+        | SynExpr.App _, SyntaxNode.SynExpr(SynExpr.App(argExpr = SynExpr.ArrayOrListComputed(collKind = CollKind.List))) :: _ -> true
 
         | _, SyntaxNode.SynExpr(SynExpr.App _) :: path
         | _, SyntaxNode.SynExpr(OuterBinaryExpr expr (Dot, _)) :: SyntaxNode.SynExpr(SynExpr.App _) :: path when
@@ -899,7 +901,7 @@ module SynExpr =
                 | SyntaxNode.SynExpr(SynExpr.DotSet _) :: _
                 | SyntaxNode.SynExpr(SynExpr.DotIndexedSet _) :: _
                 | SyntaxNode.SynExpr(SynExpr.DotNamedIndexedPropertySet _) :: _
-                | SyntaxNode.SynExpr(SynExpr.App(argExpr = SynExpr.ArrayOrListComputed(isArray = false))) :: _ -> true
+                | SyntaxNode.SynExpr(SynExpr.App(argExpr = SynExpr.ArrayOrListComputed(collKind = CollKind.List))) :: _ -> true
                 | SyntaxNode.SynExpr(SynExpr.App _) :: path -> appChainDependsOnDotOrPseudoDotPrecedence path
                 | _ -> false
 

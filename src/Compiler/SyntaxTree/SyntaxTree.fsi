@@ -582,8 +582,8 @@ type SynExpr =
         range: range *
         trivia: SynExprAnonRecdTrivia
 
-    /// F# syntax: [ e1; ...; en ], [| e1; ...; en |]
-    | ArrayOrList of isArray: bool * exprs: SynExpr list * range: range
+    /// F# syntax: [ e1; ...; en ], [| e1; ...; en |], [: e1; ...; en :]
+    | ArrayOrList of collKind: CollKind * exprs: SynExpr list * range: range
 
     /// F# syntax: { f1=e1; ...; fn=en }
     /// inherit includes location of separator (for tooling)
@@ -636,8 +636,8 @@ type SynExpr =
         bodyExpr: SynExpr *
         range: range
 
-    /// F# syntax: [ expr ], [| expr |]
-    | ArrayOrListComputed of isArray: bool * expr: SynExpr * range: range
+    /// F# syntax: [ expr ], [| expr |], [: expr :]
+    | ArrayOrListComputed of collKind: CollKind * expr: SynExpr * range: range
 
     /// F# syntax: expr..
     /// F# syntax: ..expr
@@ -1058,6 +1058,13 @@ type SynArgPats =
 
     member Patterns: SynPat list
 
+/// Defines the kind of collection expression
+[<RequireQualifiedAccess>]
+type CollKind =
+    | List
+    | Array
+    | ImmArray
+
 /// Represents a syntax tree for an F# pattern
 [<NoEquality; NoComparison; RequireQualifiedAccess>]
 type SynPat =
@@ -1105,7 +1112,7 @@ type SynPat =
     | Paren of pat: SynPat * range: range
 
     /// An array or a list as a pattern
-    | ArrayOrList of isArray: bool * elementPats: SynPat list * range: range
+    | ArrayOrList of collKind: CollKind * elementPats: SynPat list * range: range
 
     /// A record pattern
     | Record of fieldPats: ((LongIdent * Ident) * range option * SynPat) list * range: range

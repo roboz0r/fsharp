@@ -3456,7 +3456,7 @@ let TcSequenceExpressionEntry (cenv: cenv) env (overallTy: OverallTy) tpenv (has
 
         TcSequenceExpression cenv env tpenv comp overallTy m
 
-let TcArrayOrListComputedExpression (cenv: cenv) env (overallTy: OverallTy) tpenv (isArray, comp) m =
+let TcArrayOrListComputedExpression (cenv: cenv) env (overallTy: OverallTy) tpenv (collKind, comp) m =
     let g = cenv.g
 
     // The syntax '[ n .. m ]' and '[ n .. step .. m ]' is not really part of array or list syntax.
@@ -3467,7 +3467,12 @@ let TcArrayOrListComputedExpression (cenv: cenv) env (overallTy: OverallTy) tpen
     | Some replacementExpr ->
         let genCollElemTy = NewInferenceType g
 
-        let genCollTy = (if isArray then mkArrayType else mkListTy) cenv.g genCollElemTy
+        let genCollTy =
+            match collKind with
+            | CollKind.List -> mkListTy cenv.g genCollElemTy
+            | CollKind.Array -> mkArrayType cenv.g genCollElemTy
+            | CollKind.ImmArray -> failwith "TODO: create new mkImmArrayType based on mkArrayType"
+        //mkImmArrayType cenv.g genCollElemTy
 
         UnifyTypes cenv env m overallTy.Commit genCollTy
 
@@ -3486,10 +3491,11 @@ let TcArrayOrListComputedExpression (cenv: cenv) env (overallTy: OverallTy) tpen
         let expr = mkCoerceExpr (expr, exprTy, expr.Range, overallTy.Commit)
 
         let expr =
-            if isArray then
-                mkCallSeqToArray cenv.g m genCollElemTy expr
-            else
-                mkCallSeqToList cenv.g m genCollElemTy expr
+            match collKind with
+            | CollKind.Array -> mkCallSeqToArray cenv.g m genCollElemTy expr
+            | CollKind.List -> mkCallSeqToList cenv.g m genCollElemTy expr
+            | CollKind.ImmArray -> failwith "TODO: create new mkCallSeqToImmArray based on mkCallSeqToArray"
+        //mkCallSeqToImmArray cenv.g m genCollElemTy expr
 
         expr, tpenv
 
@@ -3511,7 +3517,7 @@ let TcArrayOrListComputedExpression (cenv: cenv) env (overallTy: OverallTy) tpen
             | _ -> ()
 
             let replacementExpr =
-                if isArray then
+                if collKind = CollKind.Array then
                     // This are to improve parsing/processing speed for parser tables by converting to an array blob ASAP
                     let nelems = elems.Length
 
@@ -3558,21 +3564,26 @@ let TcArrayOrListComputedExpression (cenv: cenv) env (overallTy: OverallTy) tpen
                             m
                         )
                     else
-                        SynExpr.ArrayOrList(isArray, elems, m)
+                        SynExpr.ArrayOrList(collKind, elems, m)
                 else if cenv.g.langVersion.SupportsFeature(LanguageFeature.ReallyLongLists) then
-                    SynExpr.ArrayOrList(isArray, elems, m)
+                    SynExpr.ArrayOrList(collKind, elems, m)
                 else
                     if elems.Length > 500 then
                         error (Error(FSComp.SR.tcListLiteralMaxSize (), m))
 
-                    SynExpr.ArrayOrList(isArray, elems, m)
+                    SynExpr.ArrayOrList(collKind, elems, m)
 
             TcExprUndelayed cenv overallTy env tpenv replacementExpr
         | _ ->
 
             let genCollElemTy = NewInferenceType g
 
-            let genCollTy = (if isArray then mkArrayType else mkListTy) cenv.g genCollElemTy
+            let genCollTy =
+                match collKind with
+                | CollKind.List -> mkListTy cenv.g genCollElemTy
+                | CollKind.Array -> mkArrayType cenv.g genCollElemTy
+                | CollKind.ImmArray -> failwith "TODO: create new mkImmArrayType based on mkArrayType"
+            //mkImmArrayType cenv.g genCollElemTy
 
             // Propagating type directed conversion, e.g. for
             //     let x : seq<int64>  = [ yield 1; if true then yield 2 ]
@@ -3597,9 +3608,10 @@ let TcArrayOrListComputedExpression (cenv: cenv) env (overallTy: OverallTy) tpen
                 let expr = mkCoerceExpr (expr, exprTy, expr.Range, overallTy.Commit)
 
                 let expr =
-                    if isArray then
-                        mkCallSeqToArray cenv.g m genCollElemTy expr
-                    else
-                        mkCallSeqToList cenv.g m genCollElemTy expr
+                    match collKind with
+                    | CollKind.Array -> mkCallSeqToArray cenv.g m genCollElemTy expr
+                    | CollKind.List -> mkCallSeqToList cenv.g m genCollElemTy expr
+                    | CollKind.ImmArray -> failwith "TODO: create new mkCallSeqToImmArray based on mkCallSeqToArray"
+                //mkCallSeqToImmArray cenv.g m genCollElemTy expr
 
                 expr, tpenv)
