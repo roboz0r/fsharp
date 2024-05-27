@@ -37,6 +37,11 @@
         <target state="translated"> 静的メンバーが必要です。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Parser.TOKEN.COLON.RBRACK">
+        <source>symbol ':]'</source>
+        <target state="new">symbol ':]'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Parser.TOKEN.DOT.DOT.HAT">
         <source>symbol '..^'</source>
         <target state="translated">シンボル '..^'</target>
@@ -60,6 +65,11 @@
       <trans-unit id="Parser.TOKEN.INTERP.STRING.PART">
         <source>interpolated string (part)</source>
         <target state="translated">補間された文字列 (部分)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Parser.TOKEN.LBRACK.COLON">
+        <source>symbol '[:'</source>
+        <target state="new">symbol '[:'</target>
         <note />
       </trans-unit>
       <trans-unit id="Parser.TOKEN.WHILE.BANG">

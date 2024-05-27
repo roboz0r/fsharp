@@ -652,6 +652,16 @@
         <target state="translated">A construção de código retomável '{0}' só pode ser usada em código delimitado protegido por 'se __useResumableCode então ...' e a composição geral deve formar um código retomável válido.</target>
         <note />
       </trans-unit>
+      <trans-unit id="immArrayElementHasWrongType">
+        <source>All elements of an immutable array must be implicitly convertible to the type of the first element, which here is '{0}'. This element has type '{1}'.</source>
+        <target state="new">All elements of an immutable array must be implicitly convertible to the type of the first element, which here is '{0}'. This element has type '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="immArrayElementHasWrongTypeTuple">
+        <source>All elements of an immutable array must be implicitly convertible to the type of the first element, which here is a tuple of length {0} of type\n    {1}    \nThis element is a tuple of length {2} of type\n    {3}    \n</source>
+        <target state="new">All elements of an immutable array must be implicitly convertible to the type of the first element, which here is a tuple of length {0} of type\n    {1}    \nThis element is a tuple of length {2} of type\n    {3}    \n</target>
+        <note />
+      </trans-unit>
       <trans-unit id="implMissingInlineIfLambda">
         <source>The 'InlineIfLambda' attribute is present in the signature but not the implementation.</source>
         <target state="translated">O atributo 'InlineIfLambda' está presente na assinatura, mas não na implementação.</target>
@@ -1030,6 +1040,11 @@
       <trans-unit id="optsUnknownChecksumAlgorithm">
         <source>Algorithm '{0}' is not supported</source>
         <target state="translated">Algoritmo '{0}' sem suporte</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="parsUnmatchedBracketColon">
+        <source>Unmatched '[:'</source>
+        <target state="new">Unmatched '[:'</target>
         <note />
       </trans-unit>
       <trans-unit id="pickleFsharpCoreBackwardsCompatible">

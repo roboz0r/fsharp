@@ -652,6 +652,16 @@
         <target state="translated">再開可能なコード コンストラクト '{0}' は、 'if __useResumableCode then ...' によって保護されているインライン コードでのみ使用でき、コンポジション全体は有効な再開可能コードを形成する必要があります。</target>
         <note />
       </trans-unit>
+      <trans-unit id="immArrayElementHasWrongType">
+        <source>All elements of an immutable array must be implicitly convertible to the type of the first element, which here is '{0}'. This element has type '{1}'.</source>
+        <target state="new">All elements of an immutable array must be implicitly convertible to the type of the first element, which here is '{0}'. This element has type '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="immArrayElementHasWrongTypeTuple">
+        <source>All elements of an immutable array must be implicitly convertible to the type of the first element, which here is a tuple of length {0} of type\n    {1}    \nThis element is a tuple of length {2} of type\n    {3}    \n</source>
+        <target state="new">All elements of an immutable array must be implicitly convertible to the type of the first element, which here is a tuple of length {0} of type\n    {1}    \nThis element is a tuple of length {2} of type\n    {3}    \n</target>
+        <note />
+      </trans-unit>
       <trans-unit id="implMissingInlineIfLambda">
         <source>The 'InlineIfLambda' attribute is present in the signature but not the implementation.</source>
         <target state="translated">'InlineIfLambda' 属性はシグネチャに存在しますが、実装はありません。</target>
@@ -1030,6 +1040,11 @@
       <trans-unit id="optsUnknownChecksumAlgorithm">
         <source>Algorithm '{0}' is not supported</source>
         <target state="translated">アルゴリズム '{0}' はサポートされていません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="parsUnmatchedBracketColon">
+        <source>Unmatched '[:'</source>
+        <target state="new">Unmatched '[:'</target>
         <note />
       </trans-unit>
       <trans-unit id="pickleFsharpCoreBackwardsCompatible">

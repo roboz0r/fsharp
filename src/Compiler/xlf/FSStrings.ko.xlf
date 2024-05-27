@@ -37,6 +37,11 @@
         <target state="translated"> 정적 멤버가 필요합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Parser.TOKEN.COLON.RBRACK">
+        <source>symbol ':]'</source>
+        <target state="new">symbol ':]'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Parser.TOKEN.DOT.DOT.HAT">
         <source>symbol '..^'</source>
         <target state="translated">기호 '..^'</target>
@@ -60,6 +65,11 @@
       <trans-unit id="Parser.TOKEN.INTERP.STRING.PART">
         <source>interpolated string (part)</source>
         <target state="translated">보간 문자열(부분)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Parser.TOKEN.LBRACK.COLON">
+        <source>symbol '[:'</source>
+        <target state="new">symbol '[:'</target>
         <note />
       </trans-unit>
       <trans-unit id="Parser.TOKEN.WHILE.BANG">

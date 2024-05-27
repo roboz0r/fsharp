@@ -652,6 +652,16 @@
         <target state="translated">다시 시작 가능한 코드 구문 '{0}'은 'if __useResumableCode then ...'로 보호되는 인라인 코드에서만 사용할 수 있습니다. 전반적인 구성은 유효한 다시 시작 가능한 코드를 형성해야 합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="immArrayElementHasWrongType">
+        <source>All elements of an immutable array must be implicitly convertible to the type of the first element, which here is '{0}'. This element has type '{1}'.</source>
+        <target state="new">All elements of an immutable array must be implicitly convertible to the type of the first element, which here is '{0}'. This element has type '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="immArrayElementHasWrongTypeTuple">
+        <source>All elements of an immutable array must be implicitly convertible to the type of the first element, which here is a tuple of length {0} of type\n    {1}    \nThis element is a tuple of length {2} of type\n    {3}    \n</source>
+        <target state="new">All elements of an immutable array must be implicitly convertible to the type of the first element, which here is a tuple of length {0} of type\n    {1}    \nThis element is a tuple of length {2} of type\n    {3}    \n</target>
+        <note />
+      </trans-unit>
       <trans-unit id="implMissingInlineIfLambda">
         <source>The 'InlineIfLambda' attribute is present in the signature but not the implementation.</source>
         <target state="translated">'InlineIfLambda' 특성이 서명에 있지만 구현에는 없습니다.</target>
@@ -1030,6 +1040,11 @@
       <trans-unit id="optsUnknownChecksumAlgorithm">
         <source>Algorithm '{0}' is not supported</source>
         <target state="translated">{0}' 알고리즘은 지원되지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="parsUnmatchedBracketColon">
+        <source>Unmatched '[:'</source>
+        <target state="new">Unmatched '[:'</target>
         <note />
       </trans-unit>
       <trans-unit id="pickleFsharpCoreBackwardsCompatible">
