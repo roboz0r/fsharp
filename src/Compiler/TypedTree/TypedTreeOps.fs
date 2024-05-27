@@ -6580,6 +6580,8 @@ let mkMethodTy g argTys retTy = mkIteratedFunTy g (List.map (mkRefTupledTy g) ar
 
 let mkArrayType (g: TcGlobals) ty = TType_app (g.array_tcr_nice, [ty], g.knownWithoutNull)
 
+let mkImmArrayType (g: TcGlobals) ty = TType_app (g.immarray_tcr, [ty], g.knownWithoutNull)
+
 let mkByteArrayTy (g: TcGlobals) = mkArrayType g g.byte_ty
 
 //---------------------------------------------------------------------------
@@ -7942,6 +7944,9 @@ let mkCallSeqOfFunctions g m ty1 ty2 arg1 arg2 arg3 =
     mkApps g (typedExprForIntrinsic g m g.seq_of_functions_info, [[ty1;ty2]], [ arg1; arg2; arg3 ], m) 
                   
 let mkCallSeqToArray g m elemTy arg1 =  
+    mkApps g (typedExprForIntrinsic g m g.seq_to_array_info, [[elemTy]], [ arg1 ], m) 
+                  
+let mkCallSeqToImmArray g m elemTy arg1 =  
     mkApps g (typedExprForIntrinsic g m g.seq_to_array_info, [[elemTy]], [ arg1 ], m) 
                   
 let mkCallSeqToList g m elemTy arg1 = 

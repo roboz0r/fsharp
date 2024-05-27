@@ -377,6 +377,7 @@ type TcGlobals(
   let sysLinq = ["System";"Linq"]
   let sysCollections = ["System";"Collections"]
   let sysGenerics = ["System";"Collections";"Generic"]
+  let sysImmutable = ["System";"Collections";"Immutable"]
   let sysCompilerServices = ["System";"Runtime";"CompilerServices"]
 
   let lazy_tcr = findSysTyconRef sys "Lazy`1"
@@ -403,6 +404,7 @@ type TcGlobals(
   let v_query_builder_tcref         = mk_MFLinq_tcref fslibCcu "QueryBuilder"
   let v_querySource_tcr         = mk_MFLinq_tcref fslibCcu "QuerySource`2"
   let v_linqExpression_tcr     = findSysTyconRef ["System";"Linq";"Expressions"] "Expression`1"
+  let v_ImmutableArray_tcr          = findSysTyconRef sysImmutable "ImmutableArray`1"
 
   let v_il_arr_tcr_map =
       Array.init 32 (fun idx ->
@@ -508,6 +510,8 @@ type TcGlobals(
   let mkArrayType rank (ty : TType) : TType =
       assert (rank >= 1 && rank <= 32)
       TType_app(v_il_arr_tcr_map[rank - 1], [ty], v_knownWithoutNull)
+
+  let mkImmArrayType ty = TType_app(v_ImmutableArray_tcr, [ty], v_knownWithoutNull)
 
   let mkLazyTy ty = TType_app(lazy_tcr, [ty], v_knownWithoutNull)
 
@@ -858,6 +862,8 @@ type TcGlobals(
   let v_seq_to_array_info          = makeIntrinsicValRef(fslib_MFSeqModule_nleref,                             "toArray"                              , None                 , Some "ToArray", [varb],     ([[mkSeqTy varbTy]], mkArrayType 1 varbTy))
   let v_seq_to_list_info           = makeIntrinsicValRef(fslib_MFSeqModule_nleref,                             "toList"                               , None                 , Some "ToList" , [varb],     ([[mkSeqTy varbTy]], mkListTy varbTy))
   let v_seq_map_info               = makeIntrinsicValRef(fslib_MFSeqModule_nleref,                             "map"                                  , None                 , Some "Map"    , [vara;varb], ([[varaTy --> varbTy]; [mkSeqTy varaTy]], mkSeqTy varbTy))
+  // TODO Create Seq.toImmArray
+  let v_seq_to_immarray_info       = makeIntrinsicValRef(fslib_MFSeqModule_nleref,                             "toImmArray"                           , None                 , Some "ToImmArray"             , [varb],     ([[mkSeqTy varbTy]], mkImmArrayType varbTy))
   let v_seq_singleton_info         = makeIntrinsicValRef(fslib_MFSeqModule_nleref,                             "singleton"                            , None                 , Some "Singleton"              , [vara],     ([[varaTy]], mkSeqTy varaTy))
   let v_seq_empty_info             = makeIntrinsicValRef(fslib_MFSeqModule_nleref,                             "empty"                                , None                 , Some "Empty"                  , [vara],     ([], mkSeqTy varaTy))
   let v_new_format_info            = makeIntrinsicValRef(fslib_MFCore_nleref,                                  ".ctor"                                , Some "PrintfFormat`5", None                          , [vara;varb;varc;vard;vare], ([[v_string_ty]], mkPrintfFormatTy varaTy varbTy varcTy vardTy vareTy))
@@ -1145,6 +1151,8 @@ type TcGlobals(
   member val refcell_tcr_nice = v_refcell_tcr_nice
 
   member val array_tcr_nice = v_il_arr_tcr_map[0]
+
+  member _.immarray_tcr = v_ImmutableArray_tcr
 
   member _.option_tcr_nice = v_option_tcr_nice
 
@@ -1781,6 +1789,7 @@ type TcGlobals(
   member _.create_event_info          = v_create_event_info
   member _.seq_to_list_info           = v_seq_to_list_info
   member _.seq_to_array_info          = v_seq_to_array_info
+  member _.seq_to_immarray_info       = v_seq_to_immarray_info
 
   member _.array_length_info          = v_array_length_info
   member _.array_map_info             = v_array_map_info

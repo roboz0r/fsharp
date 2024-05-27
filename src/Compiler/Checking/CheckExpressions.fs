@@ -6108,9 +6108,7 @@ and TcExprArrayOrList (cenv: cenv) overallTy env tpenv (collKind, args, m) =
         match collKind with
         | CollKind.Array -> mkArrayType g argTy
         | CollKind.List -> mkListTy g argTy
-        | CollKind.ImmArray -> 
-            failwith "Write mkImmArrayType based on mkArrayType"
-            //mkImmArrayType g argTy
+        | CollKind.ImmArray -> mkImmArrayType g argTy
 
     // Propagating type directed conversion, e.g. for 
     //     let x : seq<int64>  = [ 1; 2 ]
@@ -6135,7 +6133,9 @@ and TcExprArrayOrList (cenv: cenv) overallTy env tpenv (collKind, args, m) =
             match collKind with
             | CollKind.Array -> Expr.Op (TOp.Array, [argTy], argsR, m)
             | CollKind.List -> List.foldBack (mkCons g argTy) argsR (mkNil g m argTy)
-            | CollKind.ImmArray -> failwith "Not implemented"
+            | CollKind.ImmArray -> 
+                // TODO: Calling ImmutableArray.Create / CreateRange / CreateBuilder + Add?
+                failwith "Not implemented"
         expr, tpenv
     )
 

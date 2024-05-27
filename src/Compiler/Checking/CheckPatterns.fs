@@ -436,9 +436,7 @@ and TcPatArrayOrList warnOnUpper cenv env vFlags patEnv ty collKind args m =
         match collKind with
         | CollKind.Array -> mkArrayType g argTy
         | CollKind.List -> mkListTy g argTy
-        | CollKind.ImmArray ->
-            failwith "TODO: Write mkImmArrayType based on mkArrayType"
-            // mkImmArrayType g argTy
+        | CollKind.ImmArray -> mkImmArrayType g argTy
 
     UnifyTypes cenv env m ty actualTy
     let argsR, acc = TcPatterns warnOnUpper cenv env vFlags patEnv (List.map (fun _ -> argTy) args) args

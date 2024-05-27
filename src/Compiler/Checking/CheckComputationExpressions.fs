@@ -3471,8 +3471,7 @@ let TcArrayOrListComputedExpression (cenv: cenv) env (overallTy: OverallTy) tpen
             match collKind with
             | CollKind.List -> mkListTy cenv.g genCollElemTy
             | CollKind.Array -> mkArrayType cenv.g genCollElemTy
-            | CollKind.ImmArray -> failwith "TODO: create new mkImmArrayType based on mkArrayType"
-        //mkImmArrayType cenv.g genCollElemTy
+            | CollKind.ImmArray -> mkImmArrayType cenv.g genCollElemTy
 
         UnifyTypes cenv env m overallTy.Commit genCollTy
 
@@ -3494,8 +3493,7 @@ let TcArrayOrListComputedExpression (cenv: cenv) env (overallTy: OverallTy) tpen
             match collKind with
             | CollKind.Array -> mkCallSeqToArray cenv.g m genCollElemTy expr
             | CollKind.List -> mkCallSeqToList cenv.g m genCollElemTy expr
-            | CollKind.ImmArray -> failwith "TODO: create new mkCallSeqToImmArray based on mkCallSeqToArray"
-        //mkCallSeqToImmArray cenv.g m genCollElemTy expr
+            | CollKind.ImmArray -> mkCallSeqToImmArray cenv.g m genCollElemTy expr
 
         expr, tpenv
 
@@ -3582,8 +3580,7 @@ let TcArrayOrListComputedExpression (cenv: cenv) env (overallTy: OverallTy) tpen
                 match collKind with
                 | CollKind.List -> mkListTy cenv.g genCollElemTy
                 | CollKind.Array -> mkArrayType cenv.g genCollElemTy
-                | CollKind.ImmArray -> failwith "TODO: create new mkImmArrayType based on mkArrayType"
-            //mkImmArrayType cenv.g genCollElemTy
+                | CollKind.ImmArray -> mkImmArrayType cenv.g genCollElemTy
 
             // Propagating type directed conversion, e.g. for
             //     let x : seq<int64>  = [ yield 1; if true then yield 2 ]
@@ -3611,7 +3608,6 @@ let TcArrayOrListComputedExpression (cenv: cenv) env (overallTy: OverallTy) tpen
                     match collKind with
                     | CollKind.Array -> mkCallSeqToArray cenv.g m genCollElemTy expr
                     | CollKind.List -> mkCallSeqToList cenv.g m genCollElemTy expr
-                    | CollKind.ImmArray -> failwith "TODO: create new mkCallSeqToImmArray based on mkCallSeqToArray"
-                //mkCallSeqToImmArray cenv.g m genCollElemTy expr
+                    | CollKind.ImmArray -> mkCallSeqToImmArray cenv.g m genCollElemTy expr
 
                 expr, tpenv)

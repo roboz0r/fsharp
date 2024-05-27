@@ -1539,6 +1539,9 @@ val mkVoidPtrTy: TcGlobals -> TType
 /// Build a single-dimensional array type
 val mkArrayType: TcGlobals -> TType -> TType
 
+/// Build an immutable array type
+val mkImmArrayType: TcGlobals -> TType -> TType
+
 /// Determine if a type is a bool type
 val isBoolTy: TcGlobals -> TType -> bool
 
@@ -2209,6 +2212,8 @@ val mkCallSeqGenerated: TcGlobals -> range -> TType -> Expr -> Expr -> Expr
 val mkCallSeqOfFunctions: TcGlobals -> range -> TType -> TType -> Expr -> Expr -> Expr -> Expr
 
 val mkCallSeqToArray: TcGlobals -> range -> TType -> Expr -> Expr
+
+val mkCallSeqToImmArray: TcGlobals -> range -> TType -> Expr -> Expr
 
 val mkCallSeqToList: TcGlobals -> range -> TType -> Expr -> Expr
 
