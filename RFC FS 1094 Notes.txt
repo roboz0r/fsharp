@@ -1,0 +1,9 @@
+https://github.com/fsharp/fslang-design/blob/main/RFCs/FS-1094-immarray.md
+https://github.com/fsharp/fslang-design/discussions/528
+
+https://github.com/fsharp/fslang-design/discussions/528#discussioncomment-3982153  Switching to type directed syntax
+
+https://github.com/fsharp/fslang-suggestions/issues/1086
+https://github.com/fsharp/fslang-suggestions/issues/619
+
+https://github.com/dotnet/fsharp/pull/12859
