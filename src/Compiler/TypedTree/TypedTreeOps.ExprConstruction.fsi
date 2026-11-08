@@ -582,9 +582,6 @@ module internal TypeTesters =
     /// Determine if a type is a function (including generic). Not the same as isFunTy.
     val isForallFunctionTy: TcGlobals -> TType -> bool
 
-    /// Determine if a type is an unmanaged type
-    val isUnmanagedTy: TcGlobals -> TType -> bool
-
     val isInterfaceTycon: Tycon -> bool
 
     /// Determine if a reference to a type definition is an interface type

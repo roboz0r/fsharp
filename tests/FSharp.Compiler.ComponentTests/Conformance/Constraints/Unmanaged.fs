@@ -286,6 +286,88 @@ let _ = resultCreatingFunction A
         |> shouldSucceed
         |> ignore
 
+    [<Theory>]
+    [<InlineData("1un")>]
+    [<InlineData("1n")>]
+    [<InlineData("1.0")>]
+    [<InlineData("true")>]
+    [<InlineData("'a'")>]
+    [<InlineData("1M")>]
+    [<InlineData("System.DateTime.Now")>]
+    [<InlineData("System.Guid.Empty")>]
+    [<InlineData("System.Nullable<int>(1)")>]
+    [<InlineData("System.Collections.Generic.KeyValuePair<int, byte>(1, 1uy)")>]
+    [<InlineData("System.Collections.Generic.KeyValuePair<int, System.Collections.Generic.KeyValuePair<int, byte>>()")>]
+    [<InlineData("System.StringSplitOptions.None")>]
+    let ``.NET struct considered unmanaged when all fields are unmanaged`` (expr: string) =
+        Fsx $"""
+let test (x: 'T when 'T : unmanaged) = ()
+test ({expr})
+        """
+        |> typecheck
+        |> shouldSucceed
+
+    [<Theory>]
+    [<InlineData("System.Collections.Generic.KeyValuePair<string, int>")>]
+    [<InlineData("System.Collections.Generic.KeyValuePair<int, System.Collections.Generic.KeyValuePair<int, string>>")>]
+    [<InlineData("System.Memory<int>")>]
+    [<InlineData("System.Span<int>")>]
+    [<InlineData("System.Threading.CancellationToken")>]
+    let ``.NET struct not considered unmanaged when it has a managed field`` (ty: string) =
+        Fsx $"""
+let test<'T when 'T : unmanaged> () = ()
+test<{ty}> ()
+        """
+        |> typecheck
+        |> shouldFail
+        |> withErrorCode 1
+
+    [<Fact>]
+    let ``C#-defined struct is unmanaged only when all its instance fields are unmanaged`` () =
+        let csLib =
+            CSharp """
+namespace CsLib
+{
+    public struct Plain { private int x; public double Y; }
+    public struct StaticManaged { public static string S = ""; private int x; }
+    public struct Generic<T> { private T value; }
+    public struct NestedPlain { private Plain p; private Generic<int> g; }
+    public struct Outer<T> { public struct Inner<U> { private T t; private U u; } }
+    public struct PrivateManaged { private string s; }
+    public struct AutoPropertyManaged { public string S { get; set; } }
+    public struct NestedManaged { private PrivateManaged p; }
+    public struct ArrayField { private int[] xs; }
+}"""
+            |> withName "csLib"
+
+        FSharp """module App
+open CsLib
+let test<'T when 'T : unmanaged> () = ()
+test<Plain> ()
+test<StaticManaged> ()
+test<Generic<int>> ()
+test<NestedPlain> ()
+test<Outer<int>.Inner<byte>> ()
+test<PrivateManaged> ()
+test<AutoPropertyManaged> ()
+test<NestedManaged> ()
+test<ArrayField> ()
+test<Generic<string>> ()
+test<Outer<string>.Inner<byte>> ()
+test<Outer<int>.Inner<string>> ()
+        """
+        |> withReferences [csLib]
+        |> compile
+        |> shouldFail
+        |> withDiagnostics [
+            Error 1, Line 9, Col 1, Line 9, Col 5, "A generic construct requires that the type 'PrivateManaged' is an unmanaged type"
+            Error 1, Line 10, Col 1, Line 10, Col 5, "A generic construct requires that the type 'AutoPropertyManaged' is an unmanaged type"
+            Error 1, Line 11, Col 1, Line 11, Col 5, "A generic construct requires that the type 'NestedManaged' is an unmanaged type"
+            Error 1, Line 12, Col 1, Line 12, Col 5, "A generic construct requires that the type 'ArrayField' is an unmanaged type"
+            Error 1, Line 13, Col 1, Line 13, Col 5, "A generic construct requires that the type 'Generic<string>' is an unmanaged type"
+            Error 1, Line 14, Col 1, Line 14, Col 5, "A generic construct requires that the type 'Outer`1.Inner<string,byte>' is an unmanaged type"
+            Error 1, Line 15, Col 1, Line 15, Col 5, "A generic construct requires that the type 'Outer`1.Inner<int,string>' is an unmanaged type" ]
+
     [<Fact>]
     let ``Typechecker can handle recursive unions passed in and will not stack overflow`` () =
         Fsx """

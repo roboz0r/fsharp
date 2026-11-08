@@ -94,6 +94,58 @@ let constraintResolutionPriority g amap m (formalTy, actualTy) =
             | _ -> 0)
     | _ -> 0
 
+// An unmanaged-type is any type that isn't a reference-type, a type-parameter, or a generic struct-type and
+// contains no fields whose type is not an unmanaged-type. In other words, an unmanaged-type is one of the
+// following:
+// - sbyte, byte, short, ushort, int, uint, long, ulong, char, float, double, decimal, or bool.
+// - Any enum-type.
+// - Any pointer-type.
+// - Any generic user-defined struct-type that can be statically determined to be 'unmanaged' at construction.
+let rec isUnmanagedTy g amap m ty =
+    let isUnmanaged = isUnmanagedTy g amap m
+    let ty = stripTyEqnsAndMeasureEqns g ty
+
+    match tryTcrefOfAppTy g ty with
+    | ValueSome tcref ->
+        let isEq tcref2 = tyconRefEq g tcref tcref2
+
+        // Must cover every primitive: the only field of an imported primitive struct has that primitive's own type.
+        if
+            isEq g.nativeptr_tcr
+            || isEq g.voidptr_tcr
+            || isNumericType g ty
+            || isBoolTy g ty
+            || typeEquiv g g.char_ty ty
+        then
+            true
+        else
+            let tycon = tcref.Deref
+
+            if tycon.IsEnumTycon then
+                true
+            elif isStructUnionTy g ty then
+                let tinst = mkInstForAppTy g ty
+
+                tcref.UnionCasesAsRefList
+                |> List.forall (fun c -> c |> actualTysOfUnionCaseFields tinst |> List.forall isUnmanaged)
+            elif tcref.IsILTycon && tycon.IsStructOrEnumTycon then
+                let tinfo = ILTypeInfo.FromType g ty
+
+                tinfo.RawMetadata.Fields.AsList()
+                |> List.forall (fun fdef -> fdef.IsStatic || isUnmanaged (ILFieldInfo(tinfo, fdef).FieldType(amap, m)))
+            elif tycon.IsStructOrEnumTycon then
+                let tinst = mkInstForAppTy g ty
+                tycon.AllInstanceFieldsAsList |> List.forall (actualTyOfRecdField tinst >> isUnmanaged)
+            else
+                false
+    | ValueNone ->
+        if isStructTupleTy g ty then
+            destStructTupleTy g ty |> List.forall isUnmanaged
+        else if isStructAnonRecdTy g ty then
+            destStructAnonRecdTy g ty |> List.forall isUnmanaged
+        else
+            false
+
 //-------------------------------------------------------------------------
 // Generate type variables and record them in within the scope of the
 // compilation environment, which currently corresponds to the scope
@@ -3182,7 +3234,7 @@ and SolveTypeIsUnmanaged (csenv: ConstraintSolverEnv) ndeep m2 trace ty =
             |> List.collect (actualTysOfUnionCaseFields tinst)
             |> IterateD (SolveTypeIsUnmanaged csenv (ndeep + 1) m2 trace)
         else
-            if isUnmanagedTy g ty then
+            if isUnmanagedTy g csenv.amap m ty then
                 CompleteD
             else
                 ErrorD (ConstraintSolverError(FSComp.SR.csGenericConstructRequiresUnmanagedType(NicePrint.minimalRichTextOfType denv ty), m, m2))
